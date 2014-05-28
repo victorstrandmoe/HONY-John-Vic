@@ -8,6 +8,9 @@ public class Original_size{
    	private String url;
    	private Number width;
 
+   	public Original_size() {
+   		
+   	}
  	public Number getHeight(){
 		return this.height;
 	}

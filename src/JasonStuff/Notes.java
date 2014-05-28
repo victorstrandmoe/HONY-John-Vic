@@ -10,6 +10,9 @@ public class Notes{
    	private String timestamp;
    	private String type;
 
+   	public Notes() {
+   		
+   	}
  	public String getBlog_name(){
 		return this.blog_name;
 	}

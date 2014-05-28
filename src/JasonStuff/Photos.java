@@ -8,6 +8,9 @@ public class Photos{
    	private String caption;
    	private Original_size original_size;
 
+   	public Photos() {
+   		
+   	}
  	public List getAlt_sizes(){
 		return this.alt_sizes;
 	}

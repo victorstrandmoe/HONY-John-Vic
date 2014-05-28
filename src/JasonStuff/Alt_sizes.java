@@ -7,6 +7,10 @@ public class Alt_sizes{
    	private Number height;
    	private String url;
    	private Number width;
+   	
+   	public Alt_sizes() {
+   		
+   	}
 
  	public Number getHeight(){
 		return this.height;

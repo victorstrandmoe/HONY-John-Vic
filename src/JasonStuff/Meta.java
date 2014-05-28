@@ -7,6 +7,9 @@ public class Meta{
    	private String msg;
    	private Number status;
 
+   	public Meta() {
+   		
+   	}
  	public String getMsg(){
 		return this.msg;
 	}

@@ -23,6 +23,9 @@ public class Posts{
    	private Number timestamp;
    	private String type;
 
+   	public Posts() {
+   		
+   	}
  	public String getBlog_name(){
 		return this.blog_name;
 	}

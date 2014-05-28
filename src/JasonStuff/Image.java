@@ -6,6 +6,10 @@ import java.util.List;
 public class Image{
    	private Meta meta;
    	private Response response;
+   	
+   	public Image() {
+   		
+   	}
 
  	public Meta getMeta(){
 		return this.meta;

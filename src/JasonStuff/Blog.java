@@ -15,6 +15,10 @@ public class Blog{
    	private String title;
    	private Number updated;
    	private String url;
+   	
+   	public Blog() {
+   		
+   	}
 
  	public boolean getAsk(){
 		return this.ask;

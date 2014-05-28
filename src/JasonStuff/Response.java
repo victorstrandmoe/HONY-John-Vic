@@ -8,6 +8,9 @@ public class Response{
    	private List posts;
    	private Number total_posts;
 
+   	public Response() {
+   		
+   	}
  	public Blog getBlog(){
 		return this.blog;
 	}
