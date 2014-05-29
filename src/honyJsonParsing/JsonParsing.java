@@ -94,6 +94,19 @@ public class JsonParsing {
 								System.out.println("------------------------------------------------------------------------");
 								
 							}
+							
+							current = jp.nextToken();
+							fieldName = jp.getCurrentName();
+							if(fieldName != null && fieldName.equals("caption"))
+							{
+								node = jp.readValueAsTree(); 
+
+								System.out.println(( "Caption: " + node.get(fieldName)));
+								System.out.println("Unprocessed property 1: " + fieldName);
+								System.out.println();
+								System.out.println("------------------------------------------------------------------------");
+								
+							}
 						}
 					}
 					else 
