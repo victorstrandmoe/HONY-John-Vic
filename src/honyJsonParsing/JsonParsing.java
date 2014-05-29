@@ -8,9 +8,12 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonParsing {
 	/**
@@ -27,6 +30,7 @@ public class JsonParsing {
 	private URL jsonURL;
 	
 	
+	
 	public JsonParsing(URL jsonLocation, String blogNameToFind)
 	{
 		jsonURL = jsonLocation;
@@ -35,11 +39,23 @@ public class JsonParsing {
 	
 	public void parseFile() throws JsonParseException, IOException //TODO, simplify and break into smaller methods
 	{
-		JsonFactory f = new MappingJsonFactory();
+		
+		//Constructs reader  (Jsonparser)
+		JsonFactory f = new JsonFactory();
 		com.fasterxml.jackson.core.JsonParser jp = f.createJsonParser(jsonURL);
+		
 		JsonToken current;
 		current = jp.nextToken();
 		
+		//Wrapper for jp to a java object with its parser set as jp
+		ObjectMapper mapper = new ObjectMapper(f);
+		
+		
+		jp.setCodec(mapper);
+		
+		ObjectNode node = mapper.createObjectNode();
+		
+		int counter1 = 0;
 		//see if this was valid
 		if(current != JsonToken.START_OBJECT)
 		{
@@ -47,7 +63,7 @@ public class JsonParsing {
 		}
 		
 		//Start searching the json file for the blog information
-		while(jp.nextToken() != JsonToken.END_OBJECT)
+		while(jp.nextToken() != JsonToken.END_OBJECT && counter1 <20)
 		{
 			String fieldName = jp.getCurrentName();
 			current = jp.nextToken();
@@ -72,31 +88,36 @@ public class JsonParsing {
 							{
 								System.out.println("We are at the first picture link!");
 								
-								/*current = jp.getCurrentToken();
-								if (current == JsonToken.START_ARRAY) 
-								{
-									System.out.println("worked");
-								}*/
+								node = jp.readValueAsTree(); 
+
+								System.out.println(( node.get(fieldName) + " kaka"));
+								System.out.println("Unprocessed property 1: " + fieldName);
 								
-								/*JsonNode node = jp.readValueAsTree();
-								System.out.println(node.get(":"));*/;
-								System.out.println(jp.getText());
-								System.out.println(jp.getText());
+								System.out.println(jp.getText() + "WTF is this 1");
+								System.out.println(jp.getText()+ "WTF is this 2");
 							}
 						}
 					}
 					else 
-					{
-						System.out.println("Unprocessed property: " + fieldName);
+						
+						
+					{ 	
+						
+						//the node can now view the  parser as a tree and get values
+						node = jp.readValueAsTree(); 
+						
+						System.out.println(( node.get(fieldName) + " URL"));
+						System.out.println("Unprocessed property 1: " + fieldName);
 				      	jp.skipChildren();
 					}
 				}
 			} 
 			else
 			{
-				System.out.println("Unprocessed property: " + fieldName);
+				System.out.println("Unprocessed property 2: " + fieldName);
 		      	jp.skipChildren();
 			}
+			counter1++;
 		}
 	}
 	
