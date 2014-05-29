@@ -32,7 +32,7 @@ public class JsonParsing {
 		blogName = blogNameToFind;
 	}
 	
-	public void parseFile() throws JsonParseException, IOException
+	public void parseFile() throws JsonParseException, IOException //TODO, simplify and break into smaller methods
 	{
 		JsonFactory f = new MappingJsonFactory();
 		com.fasterxml.jackson.core.JsonParser jp = f.createJsonParser(jsonURL);
@@ -52,15 +52,35 @@ public class JsonParsing {
 			current = jp.nextToken();
 			
 			//Find the area to start searching the file
-			if(fieldName.equals("blog_name"))
+			if(fieldName != null && fieldName.equals("response"))
 			{
 				while(jp.nextToken() != JsonToken.END_OBJECT)
 				{
 					current = jp.nextToken();
 					fieldName = jp.getCurrentName();
-					if(fieldName.equals("posts"))
+					if(fieldName != null && fieldName.equals("posts"))
 					{
 						System.out.println("progress");
+						
+						//repeat this long horrible process 
+						while(jp.nextToken() != JsonToken.END_OBJECT)
+						{
+							current = jp.nextToken();
+							fieldName = jp.getCurrentName();
+							if(fieldName != null && fieldName.equals("image_permalink"))
+							{
+								System.out.println("We are at the first picture link!");
+								
+								/*current = jp.getCurrentToken();
+								if (current == JsonToken.START_ARRAY) 
+								{
+									System.out.println("worked");
+								}*/
+								
+								JsonNode node = jp.readValueAsTree();
+								//System.out.println(node.get(":"));
+							}
+						}
 					}
 					else 
 					{
@@ -68,7 +88,6 @@ public class JsonParsing {
 				      	jp.skipChildren();
 					}
 				}
-				System.out.println("Success2");
 			} 
 			else
 			{
