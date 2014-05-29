@@ -1,4 +1,3 @@
-package honyJsonParsing;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -84,22 +83,20 @@ public class JsonParsing {
 						{
 							current = jp.nextToken();
 							fieldName = jp.getCurrentName();
-							if(fieldName != null && fieldName.equals("image_permalink"))
+							
+							if(fieldName != null && fieldName.equals("caption"))
 							{
-								System.out.println("We are at the first picture link!");
-								
 								node = jp.readValueAsTree(); 
 
-								System.out.println(( node.get(fieldName) + " kaka"));
+								System.out.println(( "Caption: " + node.get(fieldName)));
 								System.out.println("Unprocessed property 1: " + fieldName);
+								System.out.println();
+								System.out.println("------------------------------------------------------------------------");
 								
-								System.out.println(jp.getText() + "WTF is this 1");
-								System.out.println(jp.getText()+ "WTF is this 2");
 							}
 						}
 					}
 					else 
-						
 						
 					{ 	
 						
@@ -107,7 +104,7 @@ public class JsonParsing {
 						node = jp.readValueAsTree(); 
 						
 						System.out.println(( node.get(fieldName) + " URL"));
-						System.out.println("Unprocessed property 1: " + fieldName);
+						System.out.println("Unprocessed property 2: " + fieldName);
 				      	jp.skipChildren();
 					}
 				}
