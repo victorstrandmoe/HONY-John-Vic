@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 
@@ -77,8 +78,10 @@ public class JsonParsing {
 									System.out.println("worked");
 								}*/
 								
-								JsonNode node = jp.readValueAsTree();
-								//System.out.println(node.get(":"));
+								/*JsonNode node = jp.readValueAsTree();
+								System.out.println(node.get(":"));*/;
+								System.out.println(jp.getText());
+								System.out.println(jp.getText());
 							}
 						}
 					}
