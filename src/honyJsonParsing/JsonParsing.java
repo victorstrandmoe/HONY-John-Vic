@@ -18,6 +18,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonParsing {
+	 private static final String layer1 = "response";
+	 private static final String layer2 = "post";
+	 private static final String layer3 = "posts";
+	 private static final String layer4 = "photos";
+	 private static final String dataField1 = "caption";
+	 private static final String dataField2 = "url";
+	
 	/**
 	 * ArrayList containing the list of urls of the pictures
 	 */
@@ -30,8 +37,16 @@ public class JsonParsing {
 	
 	private String blogName;
 	private URL jsonURL;
+	private int counter;
+	private String fieldName;
+	private JsonFactory factory;
+	private ObjectMapper mapper;
+	private ObjectNode node;
+	private JsonToken current;
+	private com.fasterxml.jackson.core.JsonParser jsonParser;
 	
-	private int counter = 0;
+	
+	
 	
 	public JsonParsing(URL jsonLocation, String blogNameToFind)
 	{
@@ -39,149 +54,89 @@ public class JsonParsing {
 		blogName = blogNameToFind;
 	}
 	
-	public void parseFile() throws JsonParseException, IOException //TODO, simplify and break into smaller methods
+	public void parseFile(int layers, ArrayList<String> data) throws JsonParseException, IOException //TODO, simplify and break into smaller methods
 	{
+		fieldName = null;
 		
-		String fieldName;
-		//Constructs reader  (Jsonparser)
-		JsonFactory f = new JsonFactory();
-		com.fasterxml.jackson.core.JsonParser jp = f.createJsonParser(jsonURL);
-		
-		JsonToken current;
-		current = jp.nextToken();
+		factory = new JsonFactory();
+		jsonParser = factory.createJsonParser(jsonURL);
 		
 		//Wrapper for jp to a java object with its parser set as jp
-		ObjectMapper mapper = new ObjectMapper(f);
+		mapper = new ObjectMapper(factory);
+		jsonParser.setCodec(mapper);
+		node = mapper.createObjectNode();
 		
+		JsonToken current;
+		current = jsonParser.nextToken();
 		
-		jp.setCodec(mapper);
-		
-		ObjectNode node = mapper.createObjectNode();
-		
-		//see if this was valid
+		//see jsonToken registers as valid
 		if(current != JsonToken.START_OBJECT)
 		{
 			System.out.println("Error: root should be object!");
 		}
-		//Start searching the json file for the blog information
-		try {
-			while(jp.nextToken() != JsonToken.END_OBJECT)
-			{
-				
-				fieldName = jp.getCurrentName();
-				current = jp.nextToken();
-				
-				//Find the area to start searching the file
-				if(fieldName != null && fieldName.equals("response"))
-				{
-					try {
-						while(jp.nextToken() != JsonToken.END_OBJECT )
-						{
-							current = jp.nextToken();
-							fieldName = jp.getCurrentName();
-							if(fieldName != null && fieldName.equals("posts"))
-							{
-
-								try {
-									//repeat this long horrible process 
-									while(jp.nextToken() != JsonToken.END_OBJECT && counter <=10)
-									{
-										current = jp.nextToken();
-										fieldName = jp.getCurrentName();
-										
-										if(fieldName != null && fieldName.equals("caption"))
-										{
-											//read values as branches (tree)
-											node = jp.readValueAsTree(); 
-											System.out.println(( "caption" + " " + node.get(fieldName)));
-											System.out.println("Unprocessed property 1: " + fieldName);
-											System.out.println();
-											
-											captions.add(node.get(fieldName).asText());
-											
-											do {
-												current = jp.nextToken();
-												fieldName= jp.getCurrentName();
-											}
-											while(fieldName!="image_permalink");
-											node = jp.readValueAsTree();
-											System.out.println(( "image_permalink" + " " + node.get(fieldName)));
-											System.out.println("Unprocessed property 1: " + fieldName);
-											System.out.println();
-											
-											urlList.add(node.get(fieldName).asText());
-											
-											counter++;
-											System.out.println(counter);
-											System.out.println("---------------------------------------------------------");
-											
-										}
-									}
-								}
-								 catch (JsonProcessingException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								} 
-							}
-							else 
-								
-							{ 	
-								try {
-							      	jp.skipChildren();
-								}
-							 catch (JsonProcessingException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} 
-							}
-						}
-					}
-				 catch (JsonProcessingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} 
-				} 
-				
-				else
-				{
-					System.out.println("Unprocessed property 2: " + fieldName);
-			      	try {
-			      		//not relevent, skip eveyrthing
-			      		jp.skipChildren();
-					} catch (JsonParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-			
-		} catch (JsonParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 		
+		counter = 0;
+		//begin the parsing!
+		while(jsonParser.nextToken() != JsonToken.END_OBJECT)
+		{
+			goLayer(layers);
+			if(counter == layers)
+			{
+				System.out.println("1");
+				return;
+			}
+		}		
 	}
 	
+	private void goLayer(int layers) throws JsonParseException, IOException
+	{
+		String fieldToFind = setLayerString(counter += 1);
+		
+		while(jsonParser.nextToken() != JsonToken.END_OBJECT)
+		{
+
+			fieldName = jsonParser.getCurrentName();
+			current = jsonParser.nextToken();
+
+			//Find the area to start searching the file
+			if(fieldName != null && fieldName.equals(fieldToFind))
+			{
+				counter += 1;
+				return;
+			}
+			else 
+			{
+				jsonParser.skipChildren();
+				System.out.println("Unprossed property while " + counter + " layers deep. Property: " + fieldName);
+			}
+		}		
+	}
+	
+	private String setLayerString(int layers)
+	{
+		switch(layers)
+		{
+		case 1: return layer1;
+		case 2: return layer2;
+		case 3: return layer3;
+		case 4: return layer4;
+		default: return layer1;
+		}
+	}
+	
+	public ArrayList<String> getURLs()
+	{
+		return urlList;
+	}
+	
+	public ArrayList<String> getCaptions()
+	{
+		return captions;
+	}
 	
 	public static void main(String args[]) throws MalformedURLException, JsonParseException, IOException
 	{
-		urlList = new ArrayList<String>();
+/*		urlList = new ArrayList<String>();
 		captions = new ArrayList<String>();
 		
 		URL url = new URL("http://api.tumblr.com/v2/blog/humansofnewyork.com/posts?api_key=7ag2CJXOuxuW3vlVS5wQG6pYA6a2ZQcSCjzZsAp2pDbVwf3xEk&notes_info=true&filter=text");
@@ -195,7 +150,13 @@ public class JsonParsing {
 		
 		for(String url_temp : urlList ) {
 			System.out.println(url_temp);
-		}
+		}*/
+		
+		URL url = new URL("http://api.tumblr.com/v2/blog/humansofnewyork.com/posts?api_key=7ag2CJXOuxuW3vlVS5wQG6pYA6a2ZQcSCjzZsAp2pDbVwf3xEk&notes_info=true&filter=text");
+		String blog = "humansofnewyork";
+		
+		JsonParsing parse = new JsonParsing(url, blog);
+		parse.parseFile(4, null);
 	}
 }
 	
