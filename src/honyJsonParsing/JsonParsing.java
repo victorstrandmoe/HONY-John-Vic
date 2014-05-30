@@ -15,13 +15,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonParsing {
 	 private static final String layer1 = "response";
-	 private static final String layer2 = "post";
-	 private static final String layer3 = "posts";
-	 private static final String layer4 = "photos";
+	 private static final String layer2 = "posts";
+	 private static final String layer3 = "photos";
+	 //private static final String layer4 = "photos";
 	 private static final String dataField1 = "caption";
 	 private static final String dataField2 = "url";
 	
@@ -83,6 +84,7 @@ public class JsonParsing {
 			if(counter == layers)
 			{
 				System.out.println("1");
+				System.out.println(getData(dataField2));
 				return;
 			}
 		}		
@@ -90,7 +92,7 @@ public class JsonParsing {
 	
 	private void goLayer(int layers) throws JsonParseException, IOException
 	{
-		String fieldToFind = setLayerString(counter += 1);
+		String fieldToFind = setLayerString(counter + 1);
 		
 		while(jsonParser.nextToken() != JsonToken.END_OBJECT)
 		{
@@ -112,14 +114,25 @@ public class JsonParsing {
 		}		
 	}
 	
-	private String setLayerString(int layers)
+	private String getData(String dataName) throws JsonParseException, IOException
 	{
-		switch(layers)
+		while(fieldName!= dataName)
+		{
+			current = jsonParser.nextToken();
+			fieldName= jsonParser.getCurrentName();
+		}
+		node = jsonParser.readValueAsTree();
+		return node.get(dataName).asText();
+	}
+	
+	private String setLayerString(int layer)
+	{
+		switch(layer)
 		{
 		case 1: return layer1;
 		case 2: return layer2;
 		case 3: return layer3;
-		case 4: return layer4;
+		//case 4: return layer4;
 		default: return layer1;
 		}
 	}
@@ -156,7 +169,7 @@ public class JsonParsing {
 		String blog = "humansofnewyork";
 		
 		JsonParsing parse = new JsonParsing(url, blog);
-		parse.parseFile(4, null);
+		parse.parseFile(3, null);
 	}
 }
 	
