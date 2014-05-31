@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MappingJsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
@@ -47,25 +48,8 @@ public class JsonParsing {
 	
 	public void parseFile(int layers, ArrayList<String> data, String dataField) throws JsonParseException, IOException //TODO, simplify and break into smaller methods
 	{
-		fieldName = null;
+		setUp();
 		
-		factory = new JsonFactory();
-		jsonParser = factory.createJsonParser(jsonURL);
-		
-		//Wrapper for jp to a java object with its parser set as jp
-		mapper = new ObjectMapper(factory);
-		jsonParser.setCodec(mapper);
-		node = mapper.createObjectNode();
-		
-		current = jsonParser.nextToken();
-		
-		//see jsonToken registers as valid
-		if(current != JsonToken.START_OBJECT)
-		{
-			System.out.println("Error: root should be object!");
-		}
-		
-		counter = 0;
 		//begin the parsing!
 		while(jsonParser.nextToken() != JsonToken.END_OBJECT)
 		{
@@ -75,19 +59,7 @@ public class JsonParsing {
 				String info = getData(dataField);
 				System.out.println(info);
 				data.add(info);
-				
-				if(dataField == dataField2)
-				{
-					counter = layers - 1;
-				}
-				else if (dataField == dataField1)
-				{
-					while(jsonParser.nextToken() != JsonToken.END_OBJECT)
-					{
-						getCaptions(data);
-						jsonParser.skipChildren();
-					}
-				}
+				counter = layers - 1;
 			}
 		}		
 	}
@@ -116,53 +88,55 @@ public class JsonParsing {
 		}		
 	}
 	
-	private void getCaptions(ArrayList<String> data) throws JsonParseException, IOException
+	public void parseSingleLayer(int layers, ArrayList<String> data, String dataField) throws JsonParseException, IOException
 	{
-		while(jsonParser.nextToken() != JsonToken.END_OBJECT)
+		setUp();
+		boolean rightLayer = false;
+		
+		while(jsonParser.nextToken() != JsonToken.END_OBJECT && !rightLayer)
 		{
-			if(fieldName != null && fieldName.equals("blog_name"))
+			goLayer(layers);
+			if(counter >= layers)
 			{
-				if(jsonParser.readValueAsTree().getClass() == node.getClass() && jsonParser.readValueAsTree() != null)
-				{
-					node = jsonParser.readValueAsTree();
-					if(node.get(fieldName) != null)
-					{
-						System.out.println(jsonParser.getCurrentName());
-						String temp = node.get(dataField1).asText();
-						System.out.println(temp);
-						data.add(temp);
-					}
-					else 
-					{
-						System.out.println("1");
-					}
-				}
-				else if(jsonParser.readValueAsTree().getClass() == node.getClass() && jsonParser.readValueAsTree() != null)
-				{
-					if(node2.get(fieldName) != null)
-					{
-						System.out.println(jsonParser.getCurrentName());
-						String temp = node2.get(dataField1).asText();
-						System.out.println(temp);
-						data.add(temp);
-					}
-					else 
-					{
-						System.out.println("1");
-					}
-				}
-				else
-				{
-					return;
-				}
-				
+				String info = getData(dataField);
+				System.out.println(info);
+				data.add(info);
+				rightLayer = true;
 			}
-			
-			current = jsonParser.nextToken();
-			fieldName = jsonParser.getCurrentName();
-			System.out.println(fieldName);
 		}
 		
+		while(jsonParser.nextToken() != JsonToken.END_OBJECT)
+		{
+			String info = getData(dataField);
+			System.out.println(info);
+			if(info != null)
+			{
+				data.add(info);
+			}
+		}
+	}
+	
+	private void setUp() throws JsonParseException, IOException
+	{
+		fieldName = null;
+		
+		factory = new JsonFactory();
+		jsonParser = factory.createJsonParser(jsonURL);
+		
+		//Wrapper for jp to a java object with its parser set as jp
+		mapper = new ObjectMapper(factory);
+		jsonParser.setCodec(mapper);
+		node = mapper.createObjectNode();
+		
+		current = jsonParser.nextToken();
+		
+		//see jsonToken registers as valid
+		if(current != JsonToken.START_OBJECT)
+		{
+			System.out.println("Error: root should be object!");
+		}
+		
+		counter = 0;
 	}
 	
 	private String getData(String dataName) throws JsonParseException, IOException
@@ -172,7 +146,17 @@ public class JsonParsing {
 			current = jsonParser.nextToken();
 			fieldName= jsonParser.getCurrentName();
 		}
+		
+		if(jsonParser.readValueAsTree().getClass() == null)
+		{
+			return getData(dataName);
+		}
 		node = jsonParser.readValueAsTree();
+		
+		if(node.get(dataName) == null)
+		{
+			return null;
+		}
 		return node.get(dataName).asText();
 	}
 	
@@ -201,7 +185,7 @@ public class JsonParsing {
 		System.out.println(urls.size());
 		
 		ArrayList<String> captions = new ArrayList<String>();
-		parse.parseFile(2, captions, "caption");
+		parse.parseSingleLayer(2, captions, "caption");
 		
 		System.out.println(captions.size());
 	}
